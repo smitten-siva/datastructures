@@ -1,0 +1,35 @@
+class Solution {
+    public int countBinaryPalindromicNumbers(long n) {
+        if (n == 0) {
+            return 1;
+        }
+
+        int totalCount = 1;
+        String binaryStr = Long.toBinaryString(n);
+        int maxLen = binaryStr.length();
+
+        for (int len = 1; len < maxLen; len++) {
+            totalCount += (1 << ((len - 1) / 2));
+        }
+
+        int halfLen = (maxLen + 1) / 2;
+        long startPrefix = 1L << (halfLen - 1);
+        long endPrefix = Long.parseLong(binaryStr.substring(0, halfLen), 2);
+
+        for (long prefix = startPrefix; prefix <= endPrefix; prefix++) {
+            long palindrome = prefix;
+            long temp = (maxLen % 2 == 0) ? prefix : (prefix >> 1);
+
+            while (temp > 0) {
+                palindrome = (palindrome << 1) | (temp & 1);
+                temp >>= 1;
+            }
+
+            if (palindrome <= n) {
+                totalCount++;
+            }
+        }
+
+        return totalCount;
+    }
+}

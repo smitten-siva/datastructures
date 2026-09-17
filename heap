@@ -1,0 +1,89 @@
+import java.io.*;
+import java.math.*;
+import java.security.*;
+import java.text.*;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.function.*;
+import java.util.regex.*;
+import java.util.stream.*;
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
+
+class Result {
+
+    /*
+     * Complete the 'minimumAverage' function below.
+     *
+     * The function is expected to return a LONG.
+     * The function accepts 2D_INTEGER_ARRAY customers as parameter.
+     */
+    public static long minimumAverage(List<List<Integer>> customers) {
+        // Sort all customers strictly by their arrival time
+        customers.sort(Comparator.comparingInt(a -> a.get(0)));
+        
+        // Min-heap ordered by pizza cooking time (Shortest Job First)
+        PriorityQueue<List<Integer>> minHeap = new PriorityQueue<>(Comparator.comparingInt(a -> a.get(1)));
+        
+        long currentTime = 0;
+        long totalWaitingTime = 0;
+        int index = 0;
+        long n = customers.size();
+        
+        while (index < n || !minHeap.isEmpty()) {
+            // Push all customers who have arrived by 'currentTime' into the min-heap
+            while (index < n && customers.get(index).get(0) <= currentTime) {
+                minHeap.add(customers.get(index));
+                index++;
+            }
+            
+            if (!minHeap.isEmpty()) {
+                // Serve the customer whose pizza takes the least amount of time to cook
+                List<Integer> currentCustomer = minHeap.poll();
+                long arrivalTime = currentCustomer.get(0);
+                long cookTime = currentCustomer.get(1);
+                
+                currentTime += cookTime;
+                totalWaitingTime += (currentTime - arrivalTime);
+            } else {
+                // If the shop is empty, skip time forward to the next arriving customer
+                currentTime = customers.get(index).get(0);
+            }
+        }
+        
+        // Return the integer floor of the average waiting time
+        return totalWaitingTime / n;
+    }
+}
+
+public class Solution {
+    public static void main(String[] args) throws IOException {
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
+        BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(System.getenv("OUTPUT_PATH")));
+
+        int n = Integer.parseInt(bufferedReader.readLine().trim());
+
+        List<List<Integer>> customers = new ArrayList<>();
+
+        IntStream.range(0, n).forEach(i -> {
+            try {
+                customers.add(
+                    Stream.of(bufferedReader.readLine().replaceAll("\\s+$", "").split(" "))
+                        .map(Integer::parseInt)
+                        .collect(toList())
+                );
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+
+        // Datatype adjusted to long to match the updated Result method signature
+        long result = Result.minimumAverage(customers);
+
+        bufferedWriter.write(String.valueOf(result));
+        bufferedWriter.newLine();
+
+        bufferedReader.close();
+        bufferedWriter.close();
+    }
+}

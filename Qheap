@@ -1,0 +1,43 @@
+import java.io.*;
+import java.util.*;
+
+public class Solution {
+
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        
+        // Min-heap to store elements and keep the smallest on top
+        PriorityQueue<Integer> minHeap = new PriorityQueue<>();
+        // Set to keep track of elements that have been marked for deletion
+        Set<Integer> deletedSet = new HashSet<>();
+        
+        int q = Integer.parseInt(br.readLine().trim());
+        
+        for (int i = 0; i < q; i++) {
+            String[] query = br.readLine().trim().split(" ");
+            int type = Integer.parseInt(query[0]);
+            
+            if (type == 1) {
+                // Add element to heap
+                int val = Integer.parseInt(query[1]);
+                minHeap.add(val);
+                // If it was previously marked as deleted, unmark it
+                deletedSet.remove(val);
+            } 
+            else if (type == 2) {
+                // Mark element for lazy deletion
+                int val = Integer.parseInt(query[1]);
+                deletedSet.add(val);
+            } 
+            else if (type == 3) {
+                // Clean up stale elements from the top of the heap
+                while (!minHeap.isEmpty() && deletedSet.contains(minHeap.peek())) {
+                    deletedSet.remove(minHeap.peek());
+                    minHeap.poll();
+                }
+                // Print the current valid minimum element
+                System.out.println(minHeap.peek());
+            }
+        }
+    }
+}
